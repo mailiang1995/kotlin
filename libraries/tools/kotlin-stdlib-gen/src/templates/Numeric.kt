@@ -10,6 +10,10 @@ object Numeric : TemplateGroupBase() {
     init {
         defaultBuilder {
             sequenceClassification(SequenceClass.terminal)
+            specialFor(Family.ArraysOfUnsigned) {
+                since("1.3")
+                annotation("@ExperimentalUnsignedTypes")
+            }
         }
     }
 
@@ -17,6 +21,7 @@ object Numeric : TemplateGroupBase() {
 
     val f_sum = fn("sum()") {
         Family.defaultFamilies.forEach { family -> include(family, numericPrimitivesDefaultOrder) }
+        include(Family.ArraysOfUnsigned)
     } builder {
 
         doc { "Returns the sum of all elements in the ${f.collection}." }

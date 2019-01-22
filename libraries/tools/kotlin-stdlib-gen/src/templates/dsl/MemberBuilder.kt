@@ -197,6 +197,7 @@ class MemberBuilder(
                     "SUM" -> {
                         when (primitive) {
                             PrimitiveType.Byte, PrimitiveType.Short, PrimitiveType.Char -> "Int"
+                            PrimitiveType.UByte, PrimitiveType.UShort -> "UInt"
                             else -> primitive
                         }
                     }
@@ -204,18 +205,23 @@ class MemberBuilder(
                         PrimitiveType.Double -> "0.0"
                         PrimitiveType.Float -> "0.0f"
                         PrimitiveType.Long -> "0L"
+                        PrimitiveType.ULong -> "0uL"
+                        in PrimitiveType.unsignedPrimitives -> "0u"
                         else -> "0"
                     }
                     "ONE" -> when (primitive) {
                         PrimitiveType.Double -> "1.0"
                         PrimitiveType.Float -> "1.0f"
                         PrimitiveType.Long -> "1L"
+                        PrimitiveType.ULong -> "1uL"
+                        in PrimitiveType.unsignedPrimitives -> "1u"
                         else -> "1"
                     }
                     "-ONE" -> when (primitive) {
                         PrimitiveType.Double -> "-1.0"
                         PrimitiveType.Float -> "-1.0f"
                         PrimitiveType.Long -> "-1L"
+                        in PrimitiveType.unsignedPrimitives -> error("-ONE is not in the domain of unsigned primitives")
                         else -> "-1"
                     }
                     "TCollection" -> {
