@@ -10,10 +10,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind
 import org.jetbrains.kotlin.gradle.plugin.mpp.UnusedSourceSetsChecker
 import org.jetbrains.kotlin.gradle.plugin.sources.METADATA_CONFIGURATION_NAME_SUFFIX
 import org.jetbrains.kotlin.gradle.plugin.sources.SourceSetConsistencyChecks
-import org.jetbrains.kotlin.gradle.util.checkBytecodeContains
-import org.jetbrains.kotlin.gradle.util.isWindows
-import org.jetbrains.kotlin.gradle.util.modify
-import org.jetbrains.kotlin.gradle.util.testResolveAllConfigurations
+import org.jetbrains.kotlin.gradle.util.*
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.junit.Assert
@@ -1522,6 +1519,24 @@ class NewMultiplatformIT : BaseGradleIT() {
                 UnusedSourceSetsChecker.WARNING_PREFIX_MANY,
                 UnusedSourceSetsChecker.WARNING_INTRO
             )
+        }
+    }
+
+    @Test
+    fun testIncrementalCompilation() = with(Project("new-mpp-jvm-js-ic", gradleVersion)) {
+        build("build") {
+            assertSuccessful()
+        }
+
+        val libCommonClassKt = projectDir.getFileByName("LibCommonClass.kt")
+        val libCommonClassJsKt = projectDir.getFileByName("LibCommonClassJs.kt")
+        libCommonClassJsKt.modify { it.checkedReplace("platform = \"js\"", "platform = \"Kotlin/JS\"") }
+
+        val libCommonClassJvmKt = projectDir.getFileByName("LibCommonClassJvm.kt")
+        libCommonClassJvmKt.modify { it.checkedReplace("platform = \"jvm\"", "platform = \"Kotlin/JVM\"") }
+        build("build") {
+            assertSuccessful()
+            assertCompiledKotlinSources(project.relativize(libCommonClassKt, libCommonClassJsKt, libCommonClassJvmKt))
         }
     }
 }
