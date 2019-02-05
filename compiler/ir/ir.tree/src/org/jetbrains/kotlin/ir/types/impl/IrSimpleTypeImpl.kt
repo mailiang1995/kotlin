@@ -41,10 +41,13 @@ class IrSimpleTypeImpl(
         variance: Variance
     ) :
             this(
-                other.safeAs<IrSimpleTypeImpl>()?.kotlinType,
+                kotlinType(other),
                 other.classifier, other.hasQuestionMark, other.arguments, other.annotations, variance
             )
-
+    
+    companion object {
+        private fun kotlinType(other: IrSimpleType) = other.safeAs<IrSimpleTypeImpl>()?.kotlinType
+    }
 }
 
 class IrTypeProjectionImpl internal constructor(
