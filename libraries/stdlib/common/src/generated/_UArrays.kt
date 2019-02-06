@@ -702,56 +702,40 @@ public inline fun ShortArray.toUShortArray(): UShortArray {
 /**
  * Returns the sum of all elements in the array.
  */
-@kotlin.jvm.JvmName("sumOfUInt")
 @SinceKotlin("1.3")
 @ExperimentalUnsignedTypes
-public fun UIntArray.sum(): UInt {
-    var sum: UInt = 0u
-    for (element in this) {
-        sum += element
-    }
-    return sum
+@kotlin.internal.InlineOnly
+public inline fun UIntArray.sum(): UInt {
+    return storage.sum().toUInt()
 }
 
 /**
  * Returns the sum of all elements in the array.
  */
-@kotlin.jvm.JvmName("sumOfULong")
 @SinceKotlin("1.3")
 @ExperimentalUnsignedTypes
-public fun ULongArray.sum(): ULong {
-    var sum: ULong = 0uL
-    for (element in this) {
-        sum += element
-    }
-    return sum
+@kotlin.internal.InlineOnly
+public inline fun ULongArray.sum(): ULong {
+    return storage.sum().toULong()
 }
 
 /**
  * Returns the sum of all elements in the array.
  */
-@kotlin.jvm.JvmName("sumOfUByte")
 @SinceKotlin("1.3")
 @ExperimentalUnsignedTypes
-public fun UByteArray.sum(): UInt {
-    var sum: UInt = 0u
-    for (element in this) {
-        sum += element
-    }
-    return sum
+@kotlin.internal.InlineOnly
+public inline fun UByteArray.sum(): UInt {
+    return storage.sumBy { it.toUByte().toInt() }.toUInt()
 }
 
 /**
  * Returns the sum of all elements in the array.
  */
-@kotlin.jvm.JvmName("sumOfUShort")
 @SinceKotlin("1.3")
 @ExperimentalUnsignedTypes
-public fun UShortArray.sum(): UInt {
-    var sum: UInt = 0u
-    for (element in this) {
-        sum += element
-    }
-    return sum
+@kotlin.internal.InlineOnly
+public inline fun UShortArray.sum(): UInt {
+    return storage.sumBy { it.toUShort().toInt() }.toUInt()
 }
 

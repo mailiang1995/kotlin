@@ -460,6 +460,10 @@ class ArraysTest {
         expect(50000) { arrayOf<Short>(20000, 30000).sum() }
         expect(3000000000000) { arrayOf<Long>(1000000000000, 2000000000000).sum() }
         expect(3.0F) { arrayOf<Float>(1.0F, 2.0F).sum() }
+        expect(14u) { arrayOf(2u, 3u, 9u).sum() }
+        expect(400u) { arrayOf<UByte>(200u, 200u).sum() }
+        expect(50000u) { arrayOf<UShort>(20000u, 30000u).sum() }
+        expect(12_000_000_000_000_000_000uL) { arrayOf<ULong>(10_000_000_000_000_000_000uL, 2_000_000_000_000_000_000uL).sum() }
     }
 
     @Test fun sumInPrimitiveArrays() {
@@ -470,6 +474,10 @@ class ArraysTest {
         expect(50000) { shortArrayOf(20000, 30000).sum() }
         expect(3000000000000) { longArrayOf(1000000000000, 2000000000000).sum() }
         expect(3.0F) { floatArrayOf(1.0F, 2.0F).sum() }
+        expect(14u) { uintArrayOf(2u, 3u, 9u).sum() }
+        expect(400u) { ubyteArrayOf(200u, 200u).sum() }
+        expect(50000u) { ushortArrayOf(20000u, 30000u).sum() }
+        expect(12_000_000_000_000_000_000uL) { ulongArrayOf(10_000_000_000_000_000_000uL, 2_000_000_000_000_000_000uL).sum() }
     }
 
     @Test fun average() {

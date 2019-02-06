@@ -5,12 +5,14 @@
 
 package templates
 
+import templates.Family.*
+
 object Numeric : TemplateGroupBase() {
 
     init {
         defaultBuilder {
             sequenceClassification(SequenceClass.terminal)
-            specialFor(Family.ArraysOfUnsigned) {
+            specialFor(ArraysOfUnsigned) {
                 since("1.3")
                 annotation("@ExperimentalUnsignedTypes")
             }
@@ -18,23 +20,57 @@ object Numeric : TemplateGroupBase() {
     }
 
     private val numericPrimitivesDefaultOrder = PrimitiveType.defaultPrimitives intersect PrimitiveType.numericPrimitives
+    private val summablePrimitives = numericPrimitivesDefaultOrder + PrimitiveType.unsignedPrimitives
 
     val f_sum = fn("sum()") {
-        Family.defaultFamilies.forEach { family -> include(family, numericPrimitivesDefaultOrder) }
-        include(Family.ArraysOfUnsigned)
+        listOf(Iterables, Sequences, ArraysOfObjects).forEach { include(it, summablePrimitives) }
+        include(ArraysOfPrimitives, numericPrimitivesDefaultOrder)
+        include(ArraysOfUnsigned)
     } builder {
+        val p = primitive!!
 
         doc { "Returns the sum of all elements in the ${f.collection}." }
-        returns("SUM")
-        platformName("sumOf<T>")
-        body {
-            """
-            var sum: SUM = ZERO
-            for (element in this) {
-                sum += element
+        returns(p.sumType().name)
+
+        specialFor(ArraysOfUnsigned) {
+            inlineOnly()
+
+            val sum = if (p == p.sumType())
+                "sum()"
+            else
+                "sumBy { it.to${p.name}().to${p.signed().sumType().name}() }"
+            body {
+                """
+                return storage.$sum.to${p.sumType().name}()
+                """
             }
-            return sum
-            """
+        }
+        specialFor(Iterables, Sequences, ArraysOfObjects, ArraysOfPrimitives) {
+            platformName("sumOf<T>")
+
+            if (p.isUnsigned()) {
+                since("1.3")
+                annotation("@ExperimentalUnsignedTypes")
+                body {
+                    """
+                    var sum: ${p.signed().sumType().name} = ${p.signed().sumType().zero()}
+                    for (element in this) {
+                        sum += element.to${p.signed().sumType().name}()
+                    }
+                    return sum.to${p.sumType().name}()
+                    """
+                }
+            } else {
+                body {
+                    """
+                    var sum: ${p.sumType().name} = ${p.sumType().zero()}
+                    for (element in this) {
+                        sum += element
+                    }
+                    return sum
+                    """
+                }
+            }
         }
     }
 

@@ -1672,6 +1672,10 @@ public final class kotlin/collections/ArraysKt {
 	public static final fun sumOfInt ([Ljava/lang/Integer;)I
 	public static final fun sumOfLong ([Ljava/lang/Long;)J
 	public static final fun sumOfShort ([Ljava/lang/Short;)I
+	public static final fun sumOfUByte ([Lkotlin/UByte;)I
+	public static final fun sumOfUInt ([Lkotlin/UInt;)I
+	public static final fun sumOfULong ([Lkotlin/ULong;)J
+	public static final fun sumOfUShort ([Lkotlin/UShort;)I
 	public static final fun take ([BI)Ljava/util/List;
 	public static final fun take ([CI)Ljava/util/List;
 	public static final fun take ([DI)Ljava/util/List;
@@ -2080,6 +2084,10 @@ public final class kotlin/collections/CollectionsKt {
 	public static final fun sumOfInt (Ljava/lang/Iterable;)I
 	public static final fun sumOfLong (Ljava/lang/Iterable;)J
 	public static final fun sumOfShort (Ljava/lang/Iterable;)I
+	public static final fun sumOfUByte (Ljava/lang/Iterable;)I
+	public static final fun sumOfUInt (Ljava/lang/Iterable;)I
+	public static final fun sumOfULong (Ljava/lang/Iterable;)J
+	public static final fun sumOfUShort (Ljava/lang/Iterable;)I
 	public static final fun take (Ljava/lang/Iterable;I)Ljava/util/List;
 	public static final fun takeLast (Ljava/util/List;I)Ljava/util/List;
 	public static final fun takeLastWhile (Ljava/util/List;Lkotlin/jvm/functions/Function1;)Ljava/util/List;
@@ -2294,10 +2302,6 @@ public final class kotlin/collections/UArraysKt {
 	public static final fun random-JzugnMA ([JLkotlin/random/Random;)J
 	public static final fun random-oSF2wD8 ([BLkotlin/random/Random;)B
 	public static final fun random-s5X_as8 ([SLkotlin/random/Random;)S
-	public static final fun sumOfUByte ([B)I
-	public static final fun sumOfUInt ([I)I
-	public static final fun sumOfULong ([J)J
-	public static final fun sumOfUShort ([S)I
 	public static final fun toTypedArray--ajY-9A ([I)[Lkotlin/UInt;
 	public static final fun toTypedArray-GBYM_sE ([B)[Lkotlin/UByte;
 	public static final fun toTypedArray-QwZRm1k ([J)[Lkotlin/ULong;
@@ -4424,6 +4428,10 @@ public final class kotlin/sequences/SequencesKt {
 	public static final fun sumOfInt (Lkotlin/sequences/Sequence;)I
 	public static final fun sumOfLong (Lkotlin/sequences/Sequence;)J
 	public static final fun sumOfShort (Lkotlin/sequences/Sequence;)I
+	public static final fun sumOfUByte (Lkotlin/sequences/Sequence;)I
+	public static final fun sumOfUInt (Lkotlin/sequences/Sequence;)I
+	public static final fun sumOfULong (Lkotlin/sequences/Sequence;)J
+	public static final fun sumOfUShort (Lkotlin/sequences/Sequence;)I
 	public static final fun take (Lkotlin/sequences/Sequence;I)Lkotlin/sequences/Sequence;
 	public static final fun takeWhile (Lkotlin/sequences/Sequence;Lkotlin/jvm/functions/Function1;)Lkotlin/sequences/Sequence;
 	public static final fun toCollection (Lkotlin/sequences/Sequence;Ljava/util/Collection;)Ljava/util/Collection;

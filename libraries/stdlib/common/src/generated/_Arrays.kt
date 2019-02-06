@@ -14254,6 +14254,62 @@ public fun Array<out Double>.sum(): Double {
 /**
  * Returns the sum of all elements in the array.
  */
+@kotlin.jvm.JvmName("sumOfUInt")
+@SinceKotlin("1.3")
+@ExperimentalUnsignedTypes
+public fun Array<out UInt>.sum(): UInt {
+    var sum: Int = 0
+    for (element in this) {
+        sum += element.toInt()
+    }
+    return sum.toUInt()
+}
+
+/**
+ * Returns the sum of all elements in the array.
+ */
+@kotlin.jvm.JvmName("sumOfULong")
+@SinceKotlin("1.3")
+@ExperimentalUnsignedTypes
+public fun Array<out ULong>.sum(): ULong {
+    var sum: Long = 0L
+    for (element in this) {
+        sum += element.toLong()
+    }
+    return sum.toULong()
+}
+
+/**
+ * Returns the sum of all elements in the array.
+ */
+@kotlin.jvm.JvmName("sumOfUByte")
+@SinceKotlin("1.3")
+@ExperimentalUnsignedTypes
+public fun Array<out UByte>.sum(): UInt {
+    var sum: Int = 0
+    for (element in this) {
+        sum += element.toInt()
+    }
+    return sum.toUInt()
+}
+
+/**
+ * Returns the sum of all elements in the array.
+ */
+@kotlin.jvm.JvmName("sumOfUShort")
+@SinceKotlin("1.3")
+@ExperimentalUnsignedTypes
+public fun Array<out UShort>.sum(): UInt {
+    var sum: Int = 0
+    for (element in this) {
+        sum += element.toInt()
+    }
+    return sum.toUInt()
+}
+
+/**
+ * Returns the sum of all elements in the array.
+ */
 public fun ByteArray.sum(): Int {
     var sum: Int = 0
     for (element in this) {

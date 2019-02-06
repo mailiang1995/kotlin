@@ -2481,3 +2481,59 @@ public fun Iterable<Double>.sum(): Double {
     return sum
 }
 
+/**
+ * Returns the sum of all elements in the collection.
+ */
+@kotlin.jvm.JvmName("sumOfUInt")
+@SinceKotlin("1.3")
+@ExperimentalUnsignedTypes
+public fun Iterable<UInt>.sum(): UInt {
+    var sum: Int = 0
+    for (element in this) {
+        sum += element.toInt()
+    }
+    return sum.toUInt()
+}
+
+/**
+ * Returns the sum of all elements in the collection.
+ */
+@kotlin.jvm.JvmName("sumOfULong")
+@SinceKotlin("1.3")
+@ExperimentalUnsignedTypes
+public fun Iterable<ULong>.sum(): ULong {
+    var sum: Long = 0L
+    for (element in this) {
+        sum += element.toLong()
+    }
+    return sum.toULong()
+}
+
+/**
+ * Returns the sum of all elements in the collection.
+ */
+@kotlin.jvm.JvmName("sumOfUByte")
+@SinceKotlin("1.3")
+@ExperimentalUnsignedTypes
+public fun Iterable<UByte>.sum(): UInt {
+    var sum: Int = 0
+    for (element in this) {
+        sum += element.toInt()
+    }
+    return sum.toUInt()
+}
+
+/**
+ * Returns the sum of all elements in the collection.
+ */
+@kotlin.jvm.JvmName("sumOfUShort")
+@SinceKotlin("1.3")
+@ExperimentalUnsignedTypes
+public fun Iterable<UShort>.sum(): UInt {
+    var sum: Int = 0
+    for (element in this) {
+        sum += element.toInt()
+    }
+    return sum.toUInt()
+}
+
