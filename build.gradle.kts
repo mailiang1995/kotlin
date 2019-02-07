@@ -27,7 +27,7 @@ buildscript {
 
         classpath("com.gradle.publish:plugin-publish-plugin:0.9.7")
         classpath(kotlin("gradle-plugin", bootstrapKotlinVersion))
-        classpath("net.sf.proguard:proguard-gradle:6.0.3")
+        classpath("net.sf.proguard:proguard-gradle:6.1.0beta2")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.9.17")
     }
 }
