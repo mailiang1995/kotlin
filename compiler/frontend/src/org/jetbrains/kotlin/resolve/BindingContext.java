@@ -199,6 +199,8 @@ public interface BindingContext {
             PropertyGetterDescriptor getter = propertyDescriptor.getGetter();
             PropertySetterDescriptor setter = propertyDescriptor.getSetter();
 
+            if (declarationPsiElement instanceof KtProperty && ((KtProperty) declarationPsiElement).hasInitializer()) return true;
+
             if (getter == null) return true;
             if (propertyDescriptor.isVar() && setter == null) return true;
             if (setter != null && !DescriptorPsiUtilsKt.hasBody(setter) && setter.getModality() != Modality.ABSTRACT) return true;
