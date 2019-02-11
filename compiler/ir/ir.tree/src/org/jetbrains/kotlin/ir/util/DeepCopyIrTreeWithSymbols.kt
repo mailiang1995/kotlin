@@ -385,7 +385,7 @@ open class DeepCopyIrTreeWithSymbols(
                 symbolRemapper.getReferencedReturnableBlock(expression.symbol),
                 mapStatementOrigin(expression.origin),
                 expression.statements.map { it.transform() },
-                expression.sourceFileName
+                expression.sourceFileSymbol
             )
         else
             IrBlockImpl(
