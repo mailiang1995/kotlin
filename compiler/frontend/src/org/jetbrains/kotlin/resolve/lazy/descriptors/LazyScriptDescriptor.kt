@@ -170,7 +170,7 @@ class LazyScriptDescriptor(
             // TODO: check if this is the behavior we want to have - see #KT-28916
             val ktScript = (psiFile as? KtFile)?.declarations?.firstIsInstanceOrNull<KtScript>()
                 ?: return null
-            return resolveSession.getScriptDescriptor(ktScript)
+            return resolveSession.getScriptDescriptor(ktScript) as ScriptDescriptor
         }
     }
 

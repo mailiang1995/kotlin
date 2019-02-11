@@ -40,7 +40,7 @@ public interface BodiesResolveContext {
     @Mutable
     Map<KtSecondaryConstructor, ClassConstructorDescriptor> getSecondaryConstructors();
     @Mutable
-    Map<KtScript, LazyScriptDescriptor> getScripts();
+    Map<KtScript, ClassDescriptorWithResolutionScopes> getScripts();
 
     @Mutable
     Map<KtProperty, PropertyDescriptor> getProperties();

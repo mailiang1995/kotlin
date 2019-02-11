@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.NoScopeRecordCliBindingTrace
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.container.get
+import org.jetbrains.kotlin.descriptors.ClassDescriptorWithResolutionScopes
 import org.jetbrains.kotlin.descriptors.ScriptDescriptor
 import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl
 import org.jetbrains.kotlin.diagnostics.Severity
@@ -80,14 +81,14 @@ class ReplCodeAnalyzer(environment: KotlinCoreEnvironment) {
     }
 
     interface ReplLineAnalysisResult {
-        val scriptDescriptor: ScriptDescriptor?
+        val scriptDescriptor: ClassDescriptorWithResolutionScopes?
         val diagnostics: Diagnostics
 
-        data class Successful(override val scriptDescriptor: ScriptDescriptor, override val diagnostics: Diagnostics) :
+        data class Successful(override val scriptDescriptor: ClassDescriptorWithResolutionScopes, override val diagnostics: Diagnostics) :
             ReplLineAnalysisResult
 
         data class WithErrors(override val diagnostics: Diagnostics) : ReplLineAnalysisResult {
-            override val scriptDescriptor: ScriptDescriptor? get() = null
+            override val scriptDescriptor: ClassDescriptorWithResolutionScopes? get() = null
         }
     }
 
@@ -192,7 +193,7 @@ class ReplCodeAnalyzer(environment: KotlinCoreEnvironment) {
             }
         }
 
-        fun lineSuccess(ktFile: KtFile, codeLine: ReplCodeLine, scriptDescriptor: LazyScriptDescriptor) {
+        fun lineSuccess(ktFile: KtFile, codeLine: ReplCodeLine, scriptDescriptor: ClassDescriptorWithResolutionScopes) {
             val successfulLine = LineInfo.SuccessfulLine(ktFile, successfulLines.lastValue(), scriptDescriptor)
             submittedLines[ktFile] = successfulLine
             successfulLines.add(CompiledReplCodeLine(ktFile.name, codeLine), successfulLine)
@@ -213,7 +214,7 @@ class ReplCodeAnalyzer(environment: KotlinCoreEnvironment) {
             class SuccessfulLine(
                 override val linePsi: KtFile,
                 override val parentLine: SuccessfulLine?,
-                val lineDescriptor: LazyScriptDescriptor
+                val lineDescriptor: ClassDescriptorWithResolutionScopes
             ) : LineInfo()
 
             class FailedLine(override val linePsi: KtFile, override val parentLine: SuccessfulLine?) : LineInfo()

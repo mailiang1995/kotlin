@@ -46,7 +46,7 @@ public class TopDownAnalysisContext implements BodiesResolveContext {
     private final Map<KtDestructuringDeclarationEntry, PropertyDescriptor> destructuringDeclarationEntries = Maps.newLinkedHashMap();
     private Map<KtCallableDeclaration, CallableMemberDescriptor> members = null;
 
-    private final Map<KtScript, LazyScriptDescriptor> scripts = Maps.newLinkedHashMap();
+    private final Map<KtScript, ClassDescriptorWithResolutionScopes> scripts = Maps.newLinkedHashMap();
 
     private final TopDownAnalysisMode topDownAnalysisMode;
     private final DeclarationScopeProvider declarationScopeProvider;
@@ -114,7 +114,7 @@ public class TopDownAnalysisContext implements BodiesResolveContext {
 
     @Override
     @NotNull
-    public Map<KtScript, LazyScriptDescriptor> getScripts() {
+    public Map<KtScript, ClassDescriptorWithResolutionScopes> getScripts() {
         return scripts;
     }
 
