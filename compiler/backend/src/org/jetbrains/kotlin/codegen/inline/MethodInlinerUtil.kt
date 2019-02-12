@@ -87,9 +87,6 @@ private fun MethodInliner.getLambdaIfExistsAndMarkInstructions(
                             it != storeIns &&
                             frames[insnList.indexOf(it)]?.top()?.singleOrNullInsn() in aloads
                 }.toList()
-                assert(aloads.size == astores.size) {
-                    "spill of inline lambda onto stack does not have corresponding unspill"
-                }
                 toDelete.addAll(aloads)
                 toDelete.addAll(astores)
                 return it
