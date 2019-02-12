@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.codegen.IrExpressionLambda
 import org.jetbrains.kotlin.codegen.StackValue
 import org.jetbrains.kotlin.codegen.coroutines.continuationAsmType
 import org.jetbrains.kotlin.codegen.coroutines.getOrCreateJvmSuspendFunctionView
+import org.jetbrains.kotlin.codegen.coroutines.isResumeImplMethodName
 import org.jetbrains.kotlin.codegen.inline.FieldRemapper.Companion.foldName
 import org.jetbrains.kotlin.codegen.inline.coroutines.CoroutineTransformer
 import org.jetbrains.kotlin.codegen.intrinsics.IntrinsicMethods
@@ -22,6 +23,7 @@ import org.jetbrains.kotlin.codegen.optimization.common.asSequence
 import org.jetbrains.kotlin.codegen.optimization.common.isMeaningful
 import org.jetbrains.kotlin.codegen.optimization.fixStack.peek
 import org.jetbrains.kotlin.codegen.optimization.fixStack.top
+import org.jetbrains.kotlin.config.isReleaseCoroutines
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.ParameterDescriptor
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
@@ -32,10 +34,7 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.utils.SmartList
 import org.jetbrains.kotlin.utils.SmartSet
 import org.jetbrains.kotlin.utils.addToStdlib.safeAs
-import org.jetbrains.org.objectweb.asm.Label
-import org.jetbrains.org.objectweb.asm.MethodVisitor
-import org.jetbrains.org.objectweb.asm.Opcodes
-import org.jetbrains.org.objectweb.asm.Type
+import org.jetbrains.org.objectweb.asm.*
 import org.jetbrains.org.objectweb.asm.commons.InstructionAdapter
 import org.jetbrains.org.objectweb.asm.commons.LocalVariablesSorter
 import org.jetbrains.org.objectweb.asm.commons.MethodRemapper
@@ -550,7 +549,8 @@ class MethodInliner(
 
                             recordTransformation(
                                 buildConstructorInvocation(
-                                    owner, cur.desc, lambdaMapping, awaitClassReification, capturesAnonymousObjectThatMustBeRegenerated
+                                    owner, cur.desc, lambdaMapping, awaitClassReification, capturesAnonymousObjectThatMustBeRegenerated,
+                                    isSuspendLambda(owner)
                                 )
                             )
                             awaitClassReification = false
@@ -637,6 +637,42 @@ class MethodInliner(
         processingNode.tryCatchBlocks.removeIf { it.isMeaningless() }
 
         return processingNode
+    }
+
+    private fun isSuspendLambda(owner: String): Boolean {
+        var superClassName: String? = null
+        val methods = arrayListOf<String>()
+        buildClassReaderByInternalName(inliningContext.state, owner).accept(object : ClassVisitor(Opcodes.API_VERSION) {
+            override fun visit(
+                version: Int,
+                access: Int,
+                name: String,
+                signature: String?,
+                superName: String?,
+                interfaces: Array<out String>?
+            ) {
+                superClassName = superName
+            }
+
+            override fun visitMethod(
+                access: Int,
+                name: String,
+                descriptor: String?,
+                signature: String?,
+                exceptions: Array<out String>?
+            ): MethodVisitor? {
+                methods.add(name)
+                return null
+            }
+        }, Opcodes.API_VERSION)
+
+        val isSuspendLambdaOrContinuation = methods.any { inliningContext.state.languageVersionSettings.isResumeImplMethodName(it) }
+
+        val isContinuationNotLambda =
+            if (inliningContext.state.languageVersionSettings.isReleaseCoroutines()) superClassName?.endsWith("ContinuationImpl") == true
+            else methods.any { it == "getLabel" }
+
+        return isSuspendLambdaOrContinuation && !isContinuationNotLambda
     }
 
     // Replace ALOAD 0
@@ -800,7 +836,8 @@ class MethodInliner(
         desc: String,
         lambdaMapping: Map<Int, LambdaInfo>,
         needReification: Boolean,
-        capturesAnonymousObjectThatMustBeRegenerated: Boolean
+        capturesAnonymousObjectThatMustBeRegenerated: Boolean,
+        isSuspendLambdaThatMustBeRegenerated: Boolean
     ): AnonymousObjectTransformationInfo {
 
         val info = AnonymousObjectTransformationInfo(
@@ -810,7 +847,8 @@ class MethodInliner(
             desc,
             false,
             inliningContext.nameGenerator,
-            capturesAnonymousObjectThatMustBeRegenerated
+            capturesAnonymousObjectThatMustBeRegenerated,
+            isSuspendLambdaThatMustBeRegenerated
         )
 
         val memoizeAnonymousObject = inliningContext.findAnonymousObjectTransformationInfo(anonymousType)

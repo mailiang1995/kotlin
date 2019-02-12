@@ -8027,6 +8027,16 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
                 runTestWithPackageReplacement("compiler/testData/codegen/box/coroutines/tailCallOptimizations/crossinline.kt", "kotlin.coroutines");
             }
 
+            @TestMetadata("decorated.kt")
+            public void testDecorated_1_2() throws Exception {
+                runTestWithPackageReplacement("compiler/testData/codegen/box/coroutines/tailCallOptimizations/decorated.kt", "kotlin.coroutines.experimental");
+            }
+
+            @TestMetadata("decorated.kt")
+            public void testDecorated_1_3() throws Exception {
+                runTestWithPackageReplacement("compiler/testData/codegen/box/coroutines/tailCallOptimizations/decorated.kt", "kotlin.coroutines");
+            }
+
             @TestMetadata("doubleCrossinlineExtensionLambda.kt")
             public void testDoubleCrossinlineExtensionLambda_1_2() throws Exception {
                 runTestWithPackageReplacement("compiler/testData/codegen/box/coroutines/tailCallOptimizations/doubleCrossinlineExtensionLambda.kt", "kotlin.coroutines.experimental");
