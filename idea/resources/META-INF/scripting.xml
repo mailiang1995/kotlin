@@ -1,0 +1,7 @@
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+  <xi:include href="android-lint.xml" xpointer="xpointer(/idea-plugin/*)"/>
+
+  <extensions defaultExtensionNs="org.jetbrains.kotlin">
+    <syntheticResolveExtension implementation="org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingResolveExtension"/>
+  </extensions>
+</idea-plugin>
