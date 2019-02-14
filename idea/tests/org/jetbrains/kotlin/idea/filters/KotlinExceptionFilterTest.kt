@@ -17,10 +17,8 @@ import java.io.File
 
 private data class SuffixOption(val suffix: String, val expectedLine: Int, val expectedColumn: Int)
 
-private data class TestFile(val realName: String, val canonicalName: String, val virtualFile: VirtualFile)
-
 class KotlinExceptionFilterTest : KotlinLightCodeInsightFixtureTestCase() {
-    private var myFiles = ArrayList<TestFile>()
+    private var myFiles = HashMap<String, VirtualFile>()
 
     private var myExceptionLine: String = ""
 
@@ -42,7 +40,7 @@ class KotlinExceptionFilterTest : KotlinLightCodeInsightFixtureTestCase() {
         rootDir.listFiles().forEach {
             val virtualFile = it.toVirtualFile()
             if (virtualFile != null) {
-                myFiles.add(TestFile(it.absolutePath, it.canonicalPath, virtualFile))
+                myFiles[it.absolutePath] = virtualFile
             }
         }
     }
@@ -57,8 +55,8 @@ class KotlinExceptionFilterTest : KotlinLightCodeInsightFixtureTestCase() {
     fun doTest(prefix: String, suffix: String, expectedLine: Int, expectedColumn: Int) {
         val filter = KotlinExceptionFilterFactory().create(GlobalSearchScope.allScope(project))
 
-        for ((fullPath, canonicalPath, virtualFile) in myFiles) {
-            myExceptionLine = "$prefix$fullPath$suffix"
+        for ((absolutePath, virtualFile) in myFiles) {
+            myExceptionLine = "$prefix$absolutePath$suffix"
             val filterResult = filter.applyFilter(myExceptionLine, myExceptionLine.length)
             Assert.assertNotNull(errorMessage("filename is not found by parser"), filterResult)
 
@@ -66,10 +64,10 @@ class KotlinExceptionFilterTest : KotlinLightCodeInsightFixtureTestCase() {
             val descriptor = fileHyperlinkInfo.descriptor!!
 
             val document = FileDocumentManager.getInstance().getDocument(virtualFile)
-            Assert.assertNotNull(errorMessage("test file $fullPath could not be found in repository"), document)
+            Assert.assertNotNull(errorMessage("test file $absolutePath could not be found in repository"), document)
             val expectedOffset = document!!.getLineStartOffset(expectedLine) + expectedColumn
 
-            Assert.assertEquals(errorMessage("different filename parsed"), canonicalPath, descriptor.file.canonicalPath)
+            Assert.assertEquals(errorMessage("different filename parsed"), virtualFile.canonicalPath, descriptor.file.canonicalPath)
             Assert.assertEquals(errorMessage("different offset parsed"), expectedOffset, descriptor.offset)
         }
     }
