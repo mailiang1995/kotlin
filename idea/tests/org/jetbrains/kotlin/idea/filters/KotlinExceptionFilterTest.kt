@@ -17,8 +17,10 @@ import java.io.File
 
 private data class SuffixOption(val suffix: String, val expectedLine: Int, val expectedColumn: Int)
 
+private data class TestFile(val realName: String, val canonicalName: String, val virtualFile: VirtualFile)
+
 class KotlinExceptionFilterTest : KotlinLightCodeInsightFixtureTestCase() {
-    private var myFiles = HashMap<String, VirtualFile>()
+    private var myFiles = ArrayList<TestFile>()
 
     private var myExceptionLine: String = ""
 
@@ -37,7 +39,12 @@ class KotlinExceptionFilterTest : KotlinLightCodeInsightFixtureTestCase() {
     override fun setUp() {
         super.setUp()
         val rootDir = File("idea/testData/debugger/exceptionFilter/kt29871/")
-        rootDir.listFiles().filter { it.toVirtualFile() != null }.forEach { myFiles[it.absolutePath] = it.toVirtualFile()!! }
+        rootDir.listFiles().forEach {
+            val virtualFile = it.toVirtualFile()
+            if (virtualFile != null) {
+                myFiles.add(TestFile(it.absolutePath, it.canonicalPath, virtualFile))
+            }
+        }
     }
 
     fun testDifferentLocations() {
@@ -50,19 +57,19 @@ class KotlinExceptionFilterTest : KotlinLightCodeInsightFixtureTestCase() {
     fun doTest(prefix: String, suffix: String, expectedLine: Int, expectedColumn: Int) {
         val filter = KotlinExceptionFilterFactory().create(GlobalSearchScope.allScope(project))
 
-        for ((fileName, expectedVirtualFile) in myFiles) {
-            myExceptionLine = "$prefix$fileName$suffix"
+        for ((fullPath, canonicalPath, virtualFile) in myFiles) {
+            myExceptionLine = "$prefix$fullPath$suffix"
             val filterResult = filter.applyFilter(myExceptionLine, myExceptionLine.length)
             Assert.assertNotNull(errorMessage("filename is not found by parser"), filterResult)
 
             val fileHyperlinkInfo = filterResult?.firstHyperlinkInfo as FileHyperlinkInfo
             val descriptor = fileHyperlinkInfo.descriptor!!
 
-            val document = FileDocumentManager.getInstance().getDocument(expectedVirtualFile)
-            Assert.assertNotNull(errorMessage("test file $fileName could not be found in repository"), document)
+            val document = FileDocumentManager.getInstance().getDocument(virtualFile)
+            Assert.assertNotNull(errorMessage("test file $fullPath could not be found in repository"), document)
             val expectedOffset = document!!.getLineStartOffset(expectedLine) + expectedColumn
 
-            Assert.assertEquals(errorMessage("different filename parsed"), fileName, descriptor.file.path)
+            Assert.assertEquals(errorMessage("different filename parsed"), canonicalPath, descriptor.file.canonicalPath)
             Assert.assertEquals(errorMessage("different offset parsed"), expectedOffset, descriptor.offset)
         }
     }
