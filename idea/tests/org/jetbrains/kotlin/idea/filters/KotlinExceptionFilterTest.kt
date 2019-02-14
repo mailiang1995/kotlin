@@ -62,7 +62,7 @@ class KotlinExceptionFilterTest : KotlinLightCodeInsightFixtureTestCase() {
             Assert.assertNotNull(errorMessage("test file $fileName could not be found in repository"), document)
             val expectedOffset = document!!.getLineStartOffset(expectedLine) + expectedColumn
 
-            Assert.assertEquals(errorMessage("different filename parsed"), fileName, descriptor.file.canonicalPath)
+            Assert.assertEquals(errorMessage("different filename parsed"), fileName, descriptor.file.path)
             Assert.assertEquals(errorMessage("different offset parsed"), expectedOffset, descriptor.offset)
         }
     }
