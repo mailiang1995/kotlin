@@ -145,9 +145,9 @@ class KotlinExceptionFilter(private val searchScope: GlobalSearchScope) : Filter
         val offset = entireLength - rawLine.length + rawLine.indexOf(atPrefix)
 
         val fileNameBegin = line.lastIndexOf('(') + 1
-        val fileNameEnd = line.indexOf(':', fileNameBegin)
+        val fileNameEnd = line.indexOf(".kt:", fileNameBegin) + 3
 
-        if (fileNameBegin <= 0 || fileNameEnd < 0)
+        if (fileNameBegin < 1 || fileNameEnd < 3)
             return null
 
         val virtualFile = findFile(line.substring(fileNameBegin, fileNameEnd)) ?: return null
@@ -187,8 +187,8 @@ class KotlinExceptionFilter(private val searchScope: GlobalSearchScope) : Filter
             return LocalFileSystem.getInstance().findFileByPath(vfsFileName)
         }
 
-        private fun parsLineColumn(line: String): Pair<Int, Int> {
-            val matcher = LINE_COLUMN_PATTERN.matcher(line)
+        private fun parsLineColumn(locationLine: String): Pair<Int, Int> {
+            val matcher = LINE_COLUMN_PATTERN.matcher(locationLine)
             if (matcher.matches()) {
                 val line = Integer.parseInt(matcher.group(1))
                 val column = Integer.parseInt(matcher.group(2))
