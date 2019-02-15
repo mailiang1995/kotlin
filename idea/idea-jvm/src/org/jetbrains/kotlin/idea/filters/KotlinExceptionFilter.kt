@@ -137,23 +137,29 @@ class KotlinExceptionFilter(private val searchScope: GlobalSearchScope) : Filter
     // The form is encoded in Kotlin Native code and covered by tests witch are linked here.
     private fun parseNativeStackTraceLine(rawLine: String, entireLength: Int): Filter.Result? {
         val atPrefix = "at "
+        val ktExtension = ".kt:"
+        val project = searchScope.project ?: return null
         val line = rawLine.trim()
 
-        if (!line.startsWith(atPrefix) && !line.endsWith(')'))
+        if (!line.startsWith(atPrefix) && !line.endsWith(')')) {
             return null
-
-        val offset = entireLength - rawLine.length + rawLine.indexOf(atPrefix)
+        }
 
         val fileNameBegin = line.lastIndexOf('(') + 1
-        val fileNameEnd = line.indexOf(".kt:", fileNameBegin) + 3
-
-        if (fileNameBegin < 1 || fileNameEnd < 3)
+        if (fileNameBegin < 1) { // no parentheses => no file name provided
             return null
+        }
+
+        val fileNameEnd = line.indexOf(ktExtension, fileNameBegin) + ktExtension.length - 1
+        if (fileNameEnd < ktExtension.length - 1) { // no kt file extension => not interested
+            return null
+        }
 
         val virtualFile = findFile(line.substring(fileNameBegin, fileNameEnd)) ?: return null
         val (lineNumber, columnNumber) = parsLineColumn(line.substring(fileNameEnd + 1, line.lastIndex))
+
+        val offset = entireLength - rawLine.length + rawLine.indexOf(atPrefix)
         val highlightEndOffset = offset + (if (lineNumber > 0) line.lastIndex else fileNameEnd)
-        val project = searchScope.project ?: return null
 
         val hyperLinkInfo = OpenFileHyperlinkInfo(project, virtualFile, lineNumber, columnNumber)
         return Filter.Result(offset + fileNameBegin, highlightEndOffset, hyperLinkInfo)
