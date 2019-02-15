@@ -61,10 +61,18 @@ class ExternalDependenciesGenerator(
 
             deserializer?.declareForwardDeclarations()
 
-            assert(symbolTable.unboundClasses.isEmpty())
+            assert(symbolTable.unboundClasses.isEmpty()) {
+                symbolTable.unboundClasses.forEach {
+                    println("${it.descriptor}")
+                }
+            }
             assert(symbolTable.unboundConstructors.isEmpty())
             assert(symbolTable.unboundEnumEntries.isEmpty())
-            assert(symbolTable.unboundFields.isEmpty())
+            assert(symbolTable.unboundFields.isEmpty()) {
+                symbolTable.unboundFields.forEach {
+                    println("${it.descriptor}")
+                }
+            }
             assert(symbolTable.unboundSimpleFunctions.isEmpty())
             assert(symbolTable.unboundTypeParameters.isEmpty())
         }

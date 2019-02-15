@@ -164,7 +164,7 @@ class DeclarationStubGenerator(
             UNDEFINED_OFFSET, UNDEFINED_OFFSET, origin, descriptor.original
         ) {
             deserializer?.findDeserializedDeclaration(referenced) as? IrConstructor ?:
-            IrLazyConstructor(UNDEFINED_OFFSET, UNDEFINED_OFFSET, origin, it, this, typeTranslator)
+            (IrLazyConstructor(UNDEFINED_OFFSET, UNDEFINED_OFFSET, origin, it, this, typeTranslator).also { println("Building lazy for $descriptor") })
         }
     }
 
@@ -196,7 +196,7 @@ class DeclarationStubGenerator(
             UNDEFINED_OFFSET, UNDEFINED_OFFSET, origin, descriptor
         ) {
             deserializer?.findDeserializedDeclaration(referenceClass) as? IrClass ?:
-            IrLazyClass(UNDEFINED_OFFSET, UNDEFINED_OFFSET, origin, it, this, typeTranslator)
+            (IrLazyClass(UNDEFINED_OFFSET, UNDEFINED_OFFSET, origin, it, this, typeTranslator).also { println("Building lazy class for $descriptor") })
         }
     }
 

@@ -6,13 +6,22 @@
 package org.jetbrains.kotlin.backend.common.descriptors
 
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptorImpl
 import org.jetbrains.kotlin.descriptors.annotations.Annotations
 import org.jetbrains.kotlin.descriptors.impl.ReceiverParameterDescriptorImpl
+import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.declarations.*
+import org.jetbrains.kotlin.ir.declarations.impl.IrClassImpl
+import org.jetbrains.kotlin.ir.expressions.*
+import org.jetbrains.kotlin.ir.symbols.impl.IrClassSymbolImpl
+import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.toKotlinType
+import org.jetbrains.kotlin.ir.util.defaultType
+import org.jetbrains.kotlin.ir.util.dump
 import org.jetbrains.kotlin.ir.util.parentAsClass
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.resolve.constants.ConstantValue
+import org.jetbrains.kotlin.resolve.constants.*
+import org.jetbrains.kotlin.resolve.descriptorUtil.classId
 import org.jetbrains.kotlin.resolve.descriptorUtil.module
 import org.jetbrains.kotlin.resolve.scopes.LazyScopeAdapter
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
@@ -20,16 +29,64 @@ import org.jetbrains.kotlin.resolve.scopes.TypeIntersectionScope
 import org.jetbrains.kotlin.resolve.scopes.receivers.ExtensionReceiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.storage.LockBasedStorageManager
-import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.types.*
 
 
-abstract class WrappedDeclarationDescriptor<T : IrDeclaration>(override val annotations: Annotations) : DeclarationDescriptor {
-    lateinit var owner: T
-    private var bound = false
+abstract class WrappedDeclarationDescriptor<T : IrDeclaration>(annotations: Annotations) : DeclarationDescriptor {
+    private val annotations_ = annotations
+
+    override val annotations: Annotations
+        get() = if (annotations_ != Annotations.EMPTY) annotations_ else run {
+            val ownerAnnotations = (owner as? IrAnnotationContainer)?.annotations ?: return@run Annotations.EMPTY
+            Annotations.create(ownerAnnotations.map { call ->
+                AnnotationDescriptorImpl(call.symbol.owner.parentAsClass.defaultType.toKotlinType(),
+                                         call.symbol.owner.valueParameters.associate { it.name to call.getValueArgument(it.index)!!.toConstantValue() },
+                                         /*TODO*/ SourceElement.NO_SOURCE)
+            })
+        }
+
+    private fun IrElement.toConstantValue(): ConstantValue<*> {
+        return if (this is IrConst<*>) {
+            when (kind) {
+                IrConstKind.Null    -> NullValue()
+                IrConstKind.Boolean -> BooleanValue(value as Boolean)
+                IrConstKind.Char    -> CharValue(value as Char)
+                IrConstKind.Byte    -> ByteValue(value as Byte)
+                IrConstKind.Short   -> ShortValue(value as Short)
+                IrConstKind.Int     -> IntValue(value as Int)
+                IrConstKind.Long    -> LongValue(value as Long)
+                IrConstKind.String  -> StringValue(value as String)
+                IrConstKind.Float   -> FloatValue(value as Float)
+                IrConstKind.Double  -> DoubleValue(value as Double)
+            }
+        } else if (this is IrVararg) {
+            val elements = elements.map { if (it is IrSpreadElement) error("$it is not expected") else it.toConstantValue() }
+            ArrayValue(elements) { moduleDescriptor ->
+                // TODO
+                moduleDescriptor.builtIns.array.defaultType
+            }
+        }
+        else if (this is IrGetEnumValue) {
+            EnumValue(symbol.owner.parentAsClass.descriptor.classId!!, symbol.owner.name)
+        } else if (this is IrClassReference) {
+            KClassValue(classType.classifierOrFail.descriptor.classId!!, /*TODO*/0)
+        }
+        else error("$this is not expected")
+    }
+
+    //lateinit var owner: T
+    private var _owner: T? = null
+
+    var owner: T
+        get() {
+            return _owner ?: error("$this is not bound")
+        }
+        private set(value) {
+            _owner?.let { error("$this is already bound to ${it.dump()}") }
+            _owner = value
+        }
+
     fun bind(declaration: T) {
-        assert(!bound)
-        bound = true
         owner = declaration
     }
 }
@@ -365,7 +422,8 @@ open class WrappedClassConstructorDescriptor(
     annotations: Annotations = Annotations.EMPTY,
     sourceElement: SourceElement = SourceElement.NO_SOURCE
 ) : ClassConstructorDescriptor, WrappedCallableDescriptor<IrConstructor>(annotations, sourceElement) {
-    override fun getContainingDeclaration() = (owner.parent as IrClass).descriptor
+    override fun getContainingDeclaration() = owner.parentAsClass.descriptor
+    //override fun getContainingDeclaration() = (owner.parent as? IrClass)?.descriptor ?: WrappedClassDescriptor().apply { bind(IrClassImpl(0,0,IrDeclarationOrigin.DEFINED, IrClassSymbolImpl(this), Name.identifier("ZZZ"), ClassKind.CLASS, Visibilities.PUBLIC, Modality.FINAL, false, false, false, false, false)) }
 
     override fun getDispatchReceiverParameter() = owner.dispatchReceiverParameter?.run {
         (containingDeclaration.containingDeclaration as ClassDescriptor).thisAsReceiverParameter
@@ -518,7 +576,7 @@ open class WrappedClassDescriptor(
     override fun isActual() = false
 
     private val _typeConstructor: TypeConstructor by lazy {
-        ClassTypeConstructorImpl(this, emptyList(), owner.superTypes.map { it.toKotlinType() }, LockBasedStorageManager.NO_LOCKS)
+        ClassTypeConstructorImpl(this, emptyList(), /*owner.superTypes.map { it.toKotlinType() }*/emptyList(), LockBasedStorageManager.NO_LOCKS)
     }
 
     override fun getTypeConstructor(): TypeConstructor = _typeConstructor
@@ -699,7 +757,7 @@ open class WrappedPropertyDescriptor(
     override fun isVar() = owner.isVar
 
     override fun getDispatchReceiverParameter(): ReceiverParameterDescriptor? {
-        TODO("not implemented")
+        return owner.getter?.dispatchReceiverParameter?.descriptor as? ReceiverParameterDescriptor
     }
 
     override fun isConst() = owner.isConst
@@ -709,7 +767,7 @@ open class WrappedPropertyDescriptor(
     override fun isLateInit() = owner.isLateinit
 
     override fun getExtensionReceiverParameter(): ReceiverParameterDescriptor? {
-        TODO("not implemented")
+        return owner.getter?.extensionReceiverParameter?.descriptor as? ReceiverParameterDescriptor
     }
 
     override fun isExternal() = owner.isExternal

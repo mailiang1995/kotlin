@@ -20,6 +20,8 @@ import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.IrReturnableBlock
 import org.jetbrains.kotlin.ir.symbols.*
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameUnsafe
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedClassDescriptor
 
 abstract class IrSymbolBase<out D : DeclarationDescriptor>(override val descriptor: D) : IrSymbol
 
@@ -68,7 +70,14 @@ class IrAnonymousInitializerSymbolImpl(descriptor: ClassDescriptor) :
 
 class IrClassSymbolImpl(descriptor: ClassDescriptor) :
     IrBindableSymbolBase<ClassDescriptor, IrClass>(descriptor),
-    IrClassSymbol
+    IrClassSymbol {
+    init {
+        if (descriptor is DeserializedClassDescriptor && descriptor.name.asString().contains("CIFilter")) {
+            println("Referencing: ${descriptor.fqNameUnsafe}")
+            Throwable().printStackTrace()
+        }
+    }
+}
 
 fun createClassSymbolOrNull(descriptor: ClassDescriptor?) =
     descriptor?.let { IrClassSymbolImpl(it) }
